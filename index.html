@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SureFix Lite</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>SureFix Lite <small>detect → reproduce → fix</small></h1>
+    <nav>
+      <span id="gcp">GCP project: <b>surefix-eca</b></span>
+      <a href="/registry" target="_blank">Eureka registry</a>
+      <a href="/api/v1/bugs" target="_blank">bug-service</a>
+      <a href="/api/v1/runs" target="_blank">run-service</a>
+      <a href="/api/v1/evidence?runId=demo" target="_blank">evidence-service</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="bugs">
+      <h2>1. Bugs <span class="tag">bug-service · PostgreSQL (Cloud SQL)</span></h2>
+      <form id="bug-form">
+        <input name="title" placeholder="Title" required>
+        <input name="targetRepo" placeholder="Target repo (e.g. surecore/frontend)">
+        <select name="severity">
+          <option>LOW</option><option selected>MEDIUM</option><option>HIGH</option><option>CRITICAL</option>
+        </select>
+        <input name="description" placeholder="Description">
+        <button>Create bug</button>
+      </form>
+      <table id="bug-table">
+        <thead><tr><th>ID</th><th>Title</th><th>Severity</th><th>Status</th><th>Repo</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section id="runs">
+      <h2>2. Runs <span class="tag">run-service · MongoDB API (Firestore)</span></h2>
+      <form id="run-form">
+        <select name="bugId" id="run-bug" required></select>
+        <select name="type"><option>DETECT</option><option>REPRODUCE</option><option>FIX</option></select>
+        <input name="suspectedFiles" placeholder="Suspected files, comma separated">
+        <button>Start run</button>
+      </form>
+      <div id="run-list"></div>
+    </section>
+
+    <section id="evidence">
+      <h2>3. Evidence <span class="tag">evidence-service · Cloud Storage bucket</span></h2>
+      <form id="evidence-form">
+        <select name="runId" id="evidence-run" required></select>
+        <input type="file" name="file" required>
+        <button>Upload file</button>
+      </form>
+      <div id="evidence-list"></div>
+    </section>
+  </main>
+
+  <footer>All requests go through the Spring Cloud API Gateway (<code>/api/**</code>). <span id="status"></span></footer>
+  <script src="app.js"></script>
+</body>
+</html>
