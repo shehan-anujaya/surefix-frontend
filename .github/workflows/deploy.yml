@@ -1,0 +1,36 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write   # OIDC token for Workload Identity Federation
+
+env:
+  PROJECT_ID: surefix-eca
+  REGION: us-central1
+  SERVICE: surefix-web
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP (Workload Identity Federation, no keys)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.DEPLOYER_SA }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy
+        run: |
+          gcloud run deploy "$SERVICE" --source . --region "$REGION" --project "$PROJECT_ID" \
+            --allow-unauthenticated --port 8080 --memory 256Mi --max-instances 3 \
+            --set-env-vars "GATEWAY_URL=${{ vars.GATEWAY_URL }}" -q
+          gcloud run services describe "$SERVICE" --region "$REGION" --format 'value(status.url)'
