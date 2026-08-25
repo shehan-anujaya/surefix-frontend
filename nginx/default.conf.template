@@ -4,12 +4,21 @@ server {
     root /usr/share/nginx/html;
     index index.html;
     client_max_body_size 25m;
+    gzip on;
+    gzip_types text/css application/javascript application/json image/svg+xml;
 
+    location / {
+        try_files $uri $uri/ /index.html;
+        add_header Cache-Control "no-cache";
+    }
     location /api/ {
         proxy_pass ${GATEWAY_URL}/api/;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_read_timeout 60s;
+    }
+    location /api/actuator/ {
+        proxy_pass ${GATEWAY_URL}/actuator/;
     }
     location /registry { proxy_pass ${GATEWAY_URL}/registry; }
     location /eureka/ { proxy_pass ${GATEWAY_URL}/eureka/; }
