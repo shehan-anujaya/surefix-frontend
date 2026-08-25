@@ -1,0 +1,16 @@
+# Static frontend + reverse proxy to the API Gateway (GATEWAY_URL is injected by Cloud Run env vars).
+server {
+    listen ${PORT};
+    root /usr/share/nginx/html;
+    index index.html;
+    client_max_body_size 25m;
+
+    location /api/ {
+        proxy_pass ${GATEWAY_URL}/api/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_read_timeout 60s;
+    }
+    location /registry { proxy_pass ${GATEWAY_URL}/registry; }
+    location /eureka/ { proxy_pass ${GATEWAY_URL}/eureka/; }
+}
