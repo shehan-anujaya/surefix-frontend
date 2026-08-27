@@ -225,13 +225,15 @@
 
   // ---------- evidence ----------
   function fileCard(f) {
+    const name = f.originalFilename || f.filename;              // stored object name is a uuid
     const img = (f.contentType || '').startsWith('image/');
-    return `<div class="file-card"><a class="thumb" href="${api.evidence.url(f)}" target="_blank" rel="noopener">${img ? `<img src="${api.evidence.url(f)}" alt="" loading="lazy">` : esc((f.contentType || 'file').split('/')[1] || 'file')}</a>
-      <div class="fb"><div class="fn" title="${esc(f.filename)}">${esc(f.filename)}</div><div class="muted">${esc(f.contentType || '')} · ${bytes(f.size)} · ${rel(f.uploadedAt)}</div>
-      <div class="fa"><a class="btn btn-sm" href="${api.evidence.url(f, true)}">Download</a><button class="btn btn-sm btn-danger" data-del-file='${esc(JSON.stringify({ runId: f.runId, filename: f.filename }))}'>Delete</button></div></div></div>`;
+    const ext = (name.includes('.') ? name.split('.').pop() : (f.contentType || 'file').split('/').pop()).toUpperCase().slice(0, 5);
+    return `<div class="file-card"><a class="thumb" href="${api.evidence.url(f)}" target="_blank" rel="noopener">${img ? `<img src="${api.evidence.url(f)}" alt="${esc(name)}" loading="lazy">` : esc(ext)}</a>
+      <div class="fb"><div class="fn" title="stored in the bucket as ${esc(f.filename)}">${esc(name)}</div><div class="muted">${bytes(f.size)} · ${rel(f.uploadedAt)}</div>
+      <div class="fa"><a class="btn btn-sm" href="${api.evidence.url(f, true)}">Download</a><button class="btn btn-sm btn-danger" data-del-file='${esc(JSON.stringify({ runId: f.runId, filename: f.filename, name }))}'>Delete</button></div></div></div>`;
   }
   function bindFileCards(root, after) {
-    root.querySelectorAll('[data-del-file]').forEach(b => b.onclick = async () => { const f = JSON.parse(b.dataset.delFile); if (await confirm('Delete file?', `${f.filename} will be removed from the bucket.`)) { try { await api.evidence.remove(f); toast('File deleted'); after(); } catch (e) { fail(e); } } });
+    root.querySelectorAll('[data-del-file]').forEach(b => b.onclick = async () => { const f = JSON.parse(b.dataset.delFile); if (await confirm('Delete file?', `${f.name || f.filename} will be removed from the bucket.`)) { try { await api.evidence.remove(f); toast('File deleted'); after(); } catch (e) { fail(e); } } });
   }
   async function renderEvidence(view) {
     const runs = await api.runs.list();
