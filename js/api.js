@@ -55,7 +55,8 @@ window.api = (() => {
     evidence: {
       list: (runId) => request('/evidence' + qs({ runId })),
       upload: (runId, file) => { const f = new FormData(); f.append('runId', runId); f.append('file', file); return request('/evidence', { method: 'POST', form: f }); },
-      url: (f, download) => `${BASE}${f.url}${download ? '?download=true' : ''}`,
+      // the service already returns a gateway-absolute path (/api/v1/evidence/...), so use it as-is
+      url: (f, download) => `${f.url}${download ? '?download=true' : ''}`,
       remove: (f) => request(`/evidence/${f.runId}/${f.filename}`, { method: 'DELETE' }),
     },
   };
